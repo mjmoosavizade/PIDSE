@@ -1,0 +1,99 @@
+# PIDSE Training Configuration
+
+# Model configuration
+model:
+  state_dim: 12                    # [px, py, pz, vx, vy, vz, roll, pitch, yaw, wx, wy, wz]
+  control_dim: 4                   # [fx, fy, fz, torque_z] or motor commands
+  measurement_dim: 9               # [accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z, pos_x, pos_y, pos_z]
+  
+  # Network architecture
+  pinn_hidden_layers: [64, 64, 32]
+  dynamics_activation: "tanh"
+  measurement_activation: "relu"
+  
+  # Training parameters
+  learning_rate: 1e-3
+  batch_size: 32
+  sequence_length: 50
+  
+  # Loss weights
+  physics_weight: 0.1              # λ_P for physics consistency
+  regularization_weight: 0.01      # λ_D for regularization
+  
+  # EKF parameters
+  initial_process_noise: 1e-3      # Initial Q matrix diagonal
+  initial_measurement_noise: 1e-2  # Initial R matrix diagonal
+  learn_noise_matrices: true       # Learn Q and R during training
+  
+  # Physics constraints
+  enforce_energy_conservation: true
+  enforce_momentum_conservation: true
+  mass: 1.0                        # System mass (kg), null for unknown
+  
+  # Device
+  device: "cuda"                   # "cuda" or "cpu"
+
+# Data configuration
+data:
+  use_synthetic: true              # Use synthetic data for testing
+  
+  # Synthetic data parameters
+  n_train_trajectories: 80
+  n_test_trajectories: 20
+  trajectory_length: 200
+  system_type: "quadrotor"         # "quadrotor", "ground_vehicle", "generic"
+  noise_level: 0.1
+  
+  # Real data parameters (when use_synthetic: false)
+  data_path: "./data/mocap_data.h5"
+  dataset_type: "mocap"            # "mocap", "kitti", "euroc"
+  
+  # Data loading
+  val_split: 0.2
+  sequence_overlap: 0.5
+  normalize: true
+  augment: true
+
+# Training configuration
+training:
+  num_epochs: 100
+  save_interval: 10                # Save checkpoint every N epochs
+  early_stopping_patience: 20
+  gradient_clip_norm: 1.0
+
+# Optimizer configuration
+optimizer:
+  learning_rate: 1e-3
+  weight_decay: 1e-5
+  
+  # Learning rate scheduling
+  scheduler:
+    type: "ReduceLROnPlateau"
+    factor: 0.5
+    patience: 10
+    min_lr: 1e-6
+
+# Evaluation configuration
+evaluation:
+  metrics:
+    - "ate"                        # Absolute Trajectory Error
+    - "rpe"                        # Relative Pose Error
+    - "velocity_rmse"
+    - "orientation_rmse"
+    - "final_drift"
+  
+  # Visualization
+  plot_trajectories: true
+  plot_loss_curves: true
+  save_plots: true
+
+# Logging configuration
+logging:
+  tensorboard: true
+  log_level: "INFO"
+  save_model_graph: true
+  
+  # What to log
+  log_gradients: false
+  log_parameters: false
+  log_frequency: 10               # Log every N batches
