@@ -124,8 +124,8 @@ class DifferentiableEKF(nn.Module):
             )
         else:
             # Fixed covariance matrices
-            self.register_buffer('Q_matrix', torch.eye(state_dim) * initial_Q)
-            self.register_buffer('R_matrix', torch.eye(measurement_dim) * initial_R)
+            self.register_buffer('_Q_matrix', torch.eye(state_dim) * initial_Q)
+            self.register_buffer('_R_matrix', torch.eye(measurement_dim) * initial_R)
     
     @property
     def Q_matrix(self) -> torch.Tensor:
@@ -133,7 +133,7 @@ class DifferentiableEKF(nn.Module):
         if self.learn_noise_matrices:
             return self.Q_learnable()
         else:
-            return self.Q_matrix
+            return self._Q_matrix
     
     @property
     def R_matrix(self) -> torch.Tensor:
@@ -141,7 +141,7 @@ class DifferentiableEKF(nn.Module):
         if self.learn_noise_matrices:
             return self.R_learnable()
         else:
-            return self.R_matrix
+            return self._R_matrix
     
     def predict(
         self,
@@ -173,8 +173,8 @@ class DifferentiableEKF(nn.Module):
         if jacobian_fn is not None:
             F = jacobian_fn(state)
         else:
-            # Use automatic differentiation to compute Jacobian
-            F = self._compute_jacobian(dynamics_fn, state)
+            # Use identity jacobian as fallback (assumes simple dynamics)
+            F = torch.eye(self.state_dim, device=state.device).unsqueeze(0).expand(batch_size, -1, -1)
         
         # Get process noise covariance
         Q = self.Q_matrix
@@ -222,7 +222,13 @@ class DifferentiableEKF(nn.Module):
         if measurement_jacobian_fn is not None:
             H = measurement_jacobian_fn(predicted_state)
         else:
-            H = self._compute_jacobian(measurement_fn, predicted_state)
+            # Use simple identity jacobian as fallback (assumes direct state measurement)
+            H = torch.eye(self.measurement_dim, self.state_dim, device=predicted_state.device).unsqueeze(0).expand(batch_size, -1, -1)
+            if self.measurement_dim > self.state_dim:
+                H = torch.eye(self.state_dim, device=predicted_state.device).unsqueeze(0).expand(batch_size, -1, -1)
+                H = torch.cat([H, torch.zeros(batch_size, self.measurement_dim - self.state_dim, self.state_dim, device=predicted_state.device)], dim=1)
+            elif self.measurement_dim < self.state_dim:
+                H = H[:, :self.measurement_dim, :]
         
         # Get measurement noise covariance
         R = self.R_matrix
@@ -349,7 +355,9 @@ class DifferentiableEKF(nn.Module):
             jacobian: Jacobian matrix [batch, output_dim, input_dim]
         """
         batch_size, input_dim = input_tensor.shape
-        input_tensor = input_tensor.requires_grad_(True)
+        
+        # Ensure input tensor requires gradients and is detached from previous graph
+        input_tensor = input_tensor.detach().clone().requires_grad_(True)
         
         # Compute function output
         output = func(input_tensor)

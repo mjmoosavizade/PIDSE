@@ -160,16 +160,19 @@ class PIDSE(nn.Module):
             
             if t > 0:
                 # Prediction step with learned dynamics
-                predicted_state = self._predict_state(
-                    estimated_states[t-1], current_control
+                predicted_state, predicted_cov = self.ekf.predict(
+                    estimated_states[t-1], 
+                    covariances[t-1],
+                    lambda x: self._predict_state(x, current_control)
                 )
             else:
                 predicted_state = current_state
+                predicted_cov = current_cov
             
             # Update step with EKF
-            estimated_state, updated_cov, pred_measurement = self.ekf(
+            estimated_state, updated_cov, pred_measurement = self.ekf.update(
                 predicted_state,
-                current_cov,
+                predicted_cov,
                 current_measurement,
                 lambda x: self._predict_measurement(x)
             )
@@ -246,6 +249,11 @@ class PIDSE(nn.Module):
         """Single training step."""
         optimizer.zero_grad()
         
+        # Move batch to device
+        device = next(self.parameters()).device
+        batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v 
+                for k, v in batch.items()}
+        
         # Forward pass
         outputs = self.forward(
             states=batch["states"],
@@ -281,7 +289,9 @@ class PIDSE(nn.Module):
         with torch.no_grad():
             for batch in data_loader:
                 # Move batch to device
-                batch = {k: v.to(self.config.device) for k, v in batch.items()}
+                device = next(self.parameters()).device
+                batch = {k: v.to(device) if isinstance(v, torch.Tensor) else v 
+                        for k, v in batch.items()}
                 
                 # Forward pass
                 outputs = self.forward(

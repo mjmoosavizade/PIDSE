@@ -361,7 +361,7 @@ def compute_covariance_metrics(
     metrics = {}
     
     # Extract diagonal covariances (variances)
-    predicted_variances = torch.diagonal(predicted_covariances, dim1=-2, dim1=-1)
+    predicted_variances = torch.diagonal(predicted_covariances, dim1=-2, dim2=-1)
     predicted_stds = torch.sqrt(predicted_variances + 1e-8)
     
     # Compute actual squared errors

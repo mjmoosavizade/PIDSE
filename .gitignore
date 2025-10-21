@@ -51,6 +51,7 @@ MANIFEST
 data/raw/
 data/processed/
 data/datasets/
+data/*
 
 # Experiment outputs
 experiments/*/logs/

@@ -69,14 +69,24 @@ class StateSpaceModel(nn.Module):
         # Position integration (kinematic)
         next_position = position + velocity * self.dt
         
-        # Velocity integration (dynamic)
+        # Velocity integration (dynamic) - adapt to control dimensions
+        control_dim = control.shape[-1]
+        
+        if control_dim >= 3:
+            control_forces = control[:, 0:3]
+        else:
+            # Pad control to 3D if needed
+            control_forces = torch.cat([
+                control, 
+                torch.zeros(batch_size, 3 - control_dim, device=device)
+            ], dim=1)
+            
         if self.mass is not None:
             # If mass is known, use F = ma
-            forces = control[:, 0:3]  # assume first 3 controls are forces
-            acceleration = forces / self.mass + self.gravity.unsqueeze(0)
+            acceleration = control_forces / self.mass + self.gravity.to(device).unsqueeze(0)
         else:
             # If mass unknown, assume control directly gives acceleration
-            acceleration = control[:, 0:3] + self.gravity.unsqueeze(0)
+            acceleration = control_forces + self.gravity.to(device).unsqueeze(0)
         
         next_velocity = velocity + acceleration * self.dt
         
@@ -92,13 +102,31 @@ class StateSpaceModel(nn.Module):
         
         next_angular_velocity = angular_velocity + angular_acceleration * self.dt
         
-        # Combine next state
-        next_state = torch.cat([
-            next_position,
-            next_velocity,
-            next_orientation,
-            next_angular_velocity
-        ], dim=1)
+        # Combine next state - match input state dimensions
+        state_components = []
+        current_dim = 0
+        
+        if self.state_dim > current_dim:
+            needed = min(3, self.state_dim - current_dim)
+            state_components.append(next_position[:, :needed])
+            current_dim += needed
+            
+        if self.state_dim > current_dim:
+            needed = min(3, self.state_dim - current_dim)  
+            state_components.append(next_velocity[:, :needed])
+            current_dim += needed
+            
+        if self.state_dim > current_dim:
+            needed = min(3, self.state_dim - current_dim)
+            state_components.append(next_orientation[:, :needed])
+            current_dim += needed
+            
+        if self.state_dim > current_dim:
+            needed = min(3, self.state_dim - current_dim)
+            state_components.append(next_angular_velocity[:, :needed])
+            current_dim += needed
+        
+        next_state = torch.cat(state_components, dim=1)
         
         return next_state
     
@@ -119,12 +147,30 @@ class StateSpaceModel(nn.Module):
         """
         batch_size = state.shape[0]
         device = state.device
+        state_dim = state.shape[-1]
         
-        # Extract state components
-        position = state[:, 0:3]
-        velocity = state[:, 3:6]
-        orientation = state[:, 6:9]
-        angular_velocity = state[:, 9:12]
+        # Extract state components adaptively based on state dimension
+        if state_dim >= 3:
+            position = state[:, 0:3]
+        else:
+            position = torch.cat([state[:, 0:2], torch.zeros(batch_size, 1, device=device)], dim=1)
+            
+        if state_dim >= 6:
+            velocity = state[:, 3:6]
+        elif state_dim >= 4:
+            velocity = torch.cat([state[:, 2:4], torch.zeros(batch_size, 1, device=device)], dim=1)
+        else:
+            velocity = torch.zeros(batch_size, 3, device=device)
+            
+        if state_dim >= 9:
+            orientation = state[:, 6:9]
+        else:
+            orientation = torch.zeros(batch_size, 3, device=device)
+            
+        if state_dim >= 12:
+            angular_velocity = state[:, 9:12]
+        else:
+            angular_velocity = torch.zeros(batch_size, 3, device=device)
         
         # Ideal accelerometer measurement (specific force)
         # This would need proper rotation from body to world frame
@@ -136,11 +182,12 @@ class StateSpaceModel(nn.Module):
         cos_y, sin_y = torch.cos(yaw), torch.sin(yaw)
         
         # Gravity in body frame (simplified)
+        gravity_magnitude = torch.norm(self.gravity.to(device))
         gravity_body = torch.stack([
             sin_p,
             -sin_r * cos_p,
             -cos_r * cos_p
-        ], dim=1) * torch.norm(self.gravity)
+        ], dim=1) * gravity_magnitude
         
         # Accelerometer measurement (would include linear acceleration in real case)
         accel_measurement = gravity_body  # simplified
@@ -151,12 +198,31 @@ class StateSpaceModel(nn.Module):
         # Position measurement (if GPS/mocap available)
         position_measurement = position
         
-        # Combine measurements
-        measurements = torch.cat([
-            accel_measurement,  # 3D
-            gyro_measurement,   # 3D
-            position_measurement  # 3D
-        ], dim=1)
+        # Combine measurements adaptively based on measurement dimension needed
+        measurement_components = []
+        
+        if self.measurement_dim >= 3:
+            measurement_components.append(accel_measurement)  # 3D
+        if self.measurement_dim >= 6:
+            measurement_components.append(gyro_measurement)   # 3D
+        if self.measurement_dim >= 9:
+            measurement_components.append(position_measurement)  # 3D
+        
+        # For simple case, just use available state components
+        if not measurement_components or self.measurement_dim == state_dim:
+            # Direct measurement of available state
+            if state_dim <= self.measurement_dim:
+                measurements = torch.cat([state, torch.zeros(batch_size, self.measurement_dim - state_dim, device=device)], dim=1)
+            else:
+                measurements = state[:, :self.measurement_dim]
+        else:
+            measurements = torch.cat(measurement_components, dim=1)
+            # Trim or pad to exact measurement dimension
+            if measurements.shape[1] > self.measurement_dim:
+                measurements = measurements[:, :self.measurement_dim]
+            elif measurements.shape[1] < self.measurement_dim:
+                padding = torch.zeros(batch_size, self.measurement_dim - measurements.shape[1], device=device)
+                measurements = torch.cat([measurements, padding], dim=1)
         
         return measurements
     
