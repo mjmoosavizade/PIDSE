@@ -1,0 +1,34 @@
+================================================================================
+DIAGNOSTIC ANALYSIS: Why Physics Constraints Hurt KITTI Performance
+================================================================================
+
+This analysis investigates the root causes for research paper documentation.
+================================================================================
+
+[1/7] Loading Models...
+  - Baseline model (physics_weight=0.0)
+  - Physics-constrained model (physics_weight=0.001)
+
+[2/7] Loading KITTI Data...
+  ✓ Loaded 55 validation samples
+
+[3/7] Analyzing Physics Loss Magnitude...
+  Estimation Loss: 10.30 ± 7.66
+  Physics Loss: 2809.23 ± 532.32
+  Physics/Estimation Ratio: 272.6656
+  ⚠️  WARNING: Physics loss is >>10x larger than estimation loss!
+  → This overwhelms the learning signal and prevents convergence
+
+[4/7] Analyzing Gradient Flow...
+Traceback (most recent call last):
+  File "/home/mj/PIDSE/experiments/diagnostic_analysis.py", line 518, in <module>
+    main()
+  File "/home/mj/PIDSE/experiments/diagnostic_analysis.py", line 372, in main
+    grad_analysis = analyze_gradient_magnitudes(physics_model, val_loader, device, 0.001)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mj/PIDSE/experiments/diagnostic_analysis.py", line 90, in analyze_gradient_magnitudes
+    original_weight = model.criterion.physics_weight
+                      ^^^^^^^^^^^^^^^
+  File "/home/mj/PIDSE/venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1964, in __getattr__
+    raise AttributeError(
+AttributeError: 'PIDSE' object has no attribute 'criterion'

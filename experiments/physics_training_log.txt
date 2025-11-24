@@ -1,0 +1,23 @@
+================================================================================
+KITTI TRAINING WITH PHYSICS CONSTRAINTS ENABLED
+================================================================================
+Device: cuda
+Physics Weight: 0.05 (ENABLED)
+Training sequences: ['00', '01', '02']
+Validation sequences: ['05']
+Test sequences: ['03', '04']
+================================================================================
+
+[1/6] Loading datasets...
+  Training samples: 408
+  Validation samples: 109
+  Batches per epoch: 163
+
+[2/6] Initializing model...
+Traceback (most recent call last):
+  File "/home/mj/PIDSE/experiments/kitti_physics_training.py", line 536, in <module>
+    main()
+  File "/home/mj/PIDSE/experiments/kitti_physics_training.py", line 304, in main
+    model = PIDSE(
+            ^^^^^^
+TypeError: PIDSE.__init__() got an unexpected keyword argument 'state_dim'

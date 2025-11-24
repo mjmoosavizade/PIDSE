@@ -1,0 +1,21 @@
+2025/11/19 12:22:58 INFO mlflow.tracking.fluent: Experiment with name 'PIDSE_Physics_Weight_Optimization' does not exist. Creating a new experiment.
+================================================================================
+FINE-GRAINED PHYSICS WEIGHT OPTIMIZATION
+================================================================================
+
+Based on hypothesis testing, we found:
+  ✓ Energy/Momentum (0.001) - Best validation loss & drift
+  ✓ Smoothness (0.002) - Best ATE
+
+Now testing fine-grained weights around these winners...
+================================================================================
+
+################################################################################
+TESTING: CONSERVATION
+Weights to test: [0.0, 0.0005, 0.001, 0.0015, 0.002, 0.003]
+################################################################################
+
+
+============================================================
+Physics: conservation, Weight: 0.0
+============================================================

@@ -32,7 +32,8 @@ class HybridLoss(nn.Module):
         state_space: StateSpaceModel,
         estimation_loss_type: str = "mse",
         physics_loss_type: str = "conservation",
-        adaptive_weights: bool = False
+        adaptive_weights: bool = False,
+        normalize_physics_loss: bool = True  # NEW: Enable loss normalization
     ):
         super().__init__()
         self.config = config
@@ -40,6 +41,7 @@ class HybridLoss(nn.Module):
         self.estimation_loss_type = estimation_loss_type
         self.physics_loss_type = physics_loss_type
         self.adaptive_weights = adaptive_weights
+        self.normalize_physics_loss = normalize_physics_loss
         
         # Loss weights
         if adaptive_weights:
@@ -63,6 +65,11 @@ class HybridLoss(nn.Module):
         # Loss history for adaptive weighting
         self.register_buffer('loss_history', torch.zeros(3, 100))  # [estimation, physics, reg] x history
         self.register_buffer('history_idx', torch.tensor(0))
+        
+        # Running statistics for loss normalization
+        self.register_buffer('estimation_loss_ema', torch.tensor(1.0))
+        self.register_buffer('physics_loss_ema', torch.tensor(1.0))
+        self.ema_momentum = 0.99  # Exponential moving average momentum
     
     @property
     def current_physics_weight(self) -> float:
@@ -108,12 +115,18 @@ class HybridLoss(nn.Module):
             true_states, estimated_states, predicted_measurements, measurements
         )
         
-        # 2. Physics Loss
-        physics_loss = self._compute_physics_loss(
+        # 2. Physics Loss (raw)
+        physics_loss_raw = self._compute_physics_loss(
             true_states, estimated_states, controls
         )
         
-        # 3. Regularization Loss
+        # 3. Normalize Physics Loss to match estimation loss scale
+        if self.normalize_physics_loss and self.physics_weight > 0:
+            physics_loss = self._normalize_physics_loss(estimation_loss, physics_loss_raw)
+        else:
+            physics_loss = physics_loss_raw
+        
+        # 4. Regularization Loss
         regularization_loss = self._compute_regularization_loss(model_parameters)
         
         # Update loss history for adaptive weighting
@@ -137,9 +150,11 @@ class HybridLoss(nn.Module):
             'total_loss': total_loss,
             'estimation_loss': estimation_loss,
             'physics_loss': physics_loss,
+            'physics_loss_raw': physics_loss_raw,  # Track unnormalized value
             'regularization_loss': regularization_loss,
             'physics_weight': torch.tensor(physics_weight),
-            'regularization_weight': torch.tensor(reg_weight)
+            'regularization_weight': torch.tensor(reg_weight),
+            'physics_scale_ratio': physics_loss_raw / (estimation_loss + 1e-8) if self.normalize_physics_loss else torch.tensor(1.0)
         }
     
     def _compute_estimation_loss(
@@ -197,6 +212,41 @@ class HybridLoss(nn.Module):
     ) -> torch.Tensor:
         """Compute physics consistency loss."""
         return self.physics_constraints(true_states, estimated_states, controls)
+    
+    def _normalize_physics_loss(
+        self,
+        estimation_loss: torch.Tensor,
+        physics_loss_raw: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Normalize physics loss to match estimation loss scale.
+        
+        This prevents physics loss from overwhelming the learning signal
+        when physics constraints produce losses at vastly different scales
+        (e.g., energy conservation in thousands while MSE is in ones).
+        
+        Method: Scale physics loss so its magnitude matches estimation loss
+        using exponential moving average for stability.
+        """
+        with torch.no_grad():
+            # Update running statistics with EMA
+            self.estimation_loss_ema = (
+                self.ema_momentum * self.estimation_loss_ema + 
+                (1 - self.ema_momentum) * estimation_loss.detach()
+            )
+            self.physics_loss_ema = (
+                self.ema_momentum * self.physics_loss_ema + 
+                (1 - self.ema_momentum) * physics_loss_raw.detach()
+            )
+        
+        # Compute scaling factor to match estimation loss magnitude
+        # Add epsilon to prevent division by zero
+        scale_factor = self.estimation_loss_ema / (self.physics_loss_ema + 1e-8)
+        
+        # Apply scaling to physics loss
+        physics_loss_normalized = physics_loss_raw * scale_factor
+        
+        return physics_loss_normalized
     
     def _compute_regularization_loss(
         self,

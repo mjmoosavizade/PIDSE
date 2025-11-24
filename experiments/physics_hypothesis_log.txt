@@ -1,0 +1,192 @@
+2025/11/18 14:47:58 INFO mlflow.tracking.fluent: Experiment with name 'PIDSE_Physics_Hypothesis_Testing' does not exist. Creating a new experiment.
+======================================================================
+MULTI-HYPOTHESIS PHYSICS CONSTRAINTS TESTING
+======================================================================
+
+Testing 5 different physics formulations with 10 epochs each
+Target: Find physics constraints that help (not hurt) KITTI performance
+Baseline to beat: ATE=2.907m, RPE=1.031m, Drift=2.906m
+======================================================================
+
+
+######################################################################
+HYPOTHESIS 1/6: H0: No Physics (Baseline)
+Description: Pure data-driven learning, no physics constraints
+######################################################################
+
+======================================================================
+Testing: NONE (weight=0.0)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=421.00, Val=387.71, Physics=8337.4169
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=319.18, Val=364.02, Physics=8460.6588
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=240.31, Val=292.87, Physics=8074.4736
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=198.15, Val=241.34, Physics=7573.4485
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=178.68, Val=199.57, Physics=7020.9990
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=152.00, Val=175.05, Physics=6599.7031
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=132.08, Val=146.08, Physics=6359.1142
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=114.69, Val=123.66, Physics=6274.3244
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=102.35, Val=130.11, Physics=6057.7835
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=92.58, Val=108.70, Physics=6159.2314
+
+Results:
+  Best Val Loss: 108.6975
+  Test ATE: 5.757m
+  Test RPE: 1.437m
+  Test Drift: 7.698m
+
+
+######################################################################
+HYPOTHESIS 2/6: H1: Energy/Momentum Conservation
+Description: Conservation laws (current default, may not fit vehicles)
+######################################################################
+
+======================================================================
+Testing: CONSERVATION (weight=0.001)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=417.77, Val=370.51, Physics=7833.4717
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=313.46, Val=270.26, Physics=7543.9606
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=235.12, Val=223.02, Physics=7131.2716
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=181.75, Val=191.18, Physics=7371.8684
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=141.10, Val=140.93, Physics=6548.4909
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=113.33, Val=130.54, Physics=6276.5602
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=101.49, Val=102.63, Physics=5969.2501
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=89.98, Val=102.02, Physics=5822.6412
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=83.48, Val=83.58, Physics=5562.9427
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=77.82, Val=84.42, Physics=5418.6026
+
+Results:
+  Best Val Loss: 83.5806
+  Test ATE: 5.256m
+  Test RPE: 1.408m
+  Test Drift: 5.781m
+
+
+######################################################################
+HYPOTHESIS 3/6: H2: Dynamics Consistency
+Description: State transition consistency with dynamics model
+######################################################################
+
+======================================================================
+Testing: DYNAMICS_CONSISTENCY (weight=0.001)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=430.16, Val=401.74, Physics=8397.8635
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=320.59, Val=346.10, Physics=8090.6527
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=263.53, Val=249.29, Physics=8118.5781
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=224.26, Val=229.65, Physics=7423.9135
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=180.05, Val=191.93, Physics=7059.5195
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=156.23, Val=179.16, Physics=6949.8947
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=143.93, Val=159.36, Physics=6720.4248
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=119.22, Val=139.82, Physics=6374.4455
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=108.11, Val=131.91, Physics=6300.8186
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=100.44, Val=136.86, Physics=6344.0949
+
+Results:
+  Best Val Loss: 131.9136
+  Test ATE: 5.662m
+  Test RPE: 1.364m
+  Test Drift: 9.559m
+
+
+######################################################################
+HYPOTHESIS 4/6: H3: Trajectory Smoothness
+Description: Penalize jerky/discontinuous trajectories
+######################################################################
+
+======================================================================
+Testing: SMOOTHNESS (weight=0.002)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=430.77, Val=349.18, Physics=7812.7034
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=308.93, Val=292.06, Physics=7369.1762
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=236.34, Val=224.05, Physics=6533.6014
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=176.61, Val=175.29, Physics=6287.5809
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=143.74, Val=154.03, Physics=6060.4761
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=129.23, Val=138.20, Physics=5902.1175
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=110.64, Val=109.84, Physics=5783.0304
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=99.00, Val=101.21, Physics=5616.5595
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=90.09, Val=94.49, Physics=5567.3155
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=87.08, Val=85.99, Physics=5470.7131
+
+Results:
+  Best Val Loss: 85.9871
+  Test ATE: 4.869m
+  Test RPE: 1.393m
+  Test Drift: 6.923m
+
+
+######################################################################
+HYPOTHESIS 5/6: H4: Energy Conservation (Strong)
+Description: Same as H1 but stronger weight
+######################################################################
+
+======================================================================
+Testing: CONSERVATION (weight=0.005)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=446.61, Val=357.86, Physics=7129.5207
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=354.46, Val=311.02, Physics=6700.7305
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=272.17, Val=279.33, Physics=6221.1913
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=232.49, Val=269.83, Physics=5979.1339
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=202.00, Val=230.57, Physics=5775.6117
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=181.56, Val=186.17, Physics=5589.5511
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=167.57, Val=181.56, Physics=5436.6957
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=153.62, Val=161.29, Physics=5359.0540
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=138.96, Val=155.18, Physics=5157.7364
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=130.79, Val=130.55, Physics=5052.0775
+
+Results:
+  Best Val Loss: 130.5543
+  Test ATE: 5.466m
+  Test RPE: 1.397m
+  Test Drift: 7.512m
+
+
+######################################################################
+HYPOTHESIS 6/6: H5: Smoothness (Strong)
+Description: Stronger smoothness constraint
+######################################################################
+
+======================================================================
+Testing: SMOOTHNESS (weight=0.01)
+======================================================================
+  Epoch 1/10, Batch 0/204  Epoch 1/10, Batch 50/204  Epoch 1/10, Batch 100/204  Epoch 1/10, Batch 150/204  Epoch 1/10, Batch 200/204  Epoch 1/10: Train=462.27, Val=460.70, Physics=6797.5465
+  Epoch 2/10, Batch 0/204  Epoch 2/10, Batch 50/204  Epoch 2/10, Batch 100/204  Epoch 2/10, Batch 150/204  Epoch 2/10, Batch 200/204  Epoch 2/10: Train=367.52, Val=360.68, Physics=6288.8301
+  Epoch 3/10, Batch 0/204  Epoch 3/10, Batch 50/204  Epoch 3/10, Batch 100/204  Epoch 3/10, Batch 150/204  Epoch 3/10, Batch 200/204  Epoch 3/10: Train=280.52, Val=278.59, Physics=5806.7239
+  Epoch 4/10, Batch 0/204  Epoch 4/10, Batch 50/204  Epoch 4/10, Batch 100/204  Epoch 4/10, Batch 150/204  Epoch 4/10, Batch 200/204  Epoch 4/10: Train=242.09, Val=263.05, Physics=5573.9463
+  Epoch 5/10, Batch 0/204  Epoch 5/10, Batch 50/204  Epoch 5/10, Batch 100/204  Epoch 5/10, Batch 150/204  Epoch 5/10, Batch 200/204  Epoch 5/10: Train=217.04, Val=249.09, Physics=5411.7053
+  Epoch 6/10, Batch 0/204  Epoch 6/10, Batch 50/204  Epoch 6/10, Batch 100/204  Epoch 6/10, Batch 150/204  Epoch 6/10, Batch 200/204  Epoch 6/10: Train=199.27, Val=224.09, Physics=5257.6426
+  Epoch 7/10, Batch 0/204  Epoch 7/10, Batch 50/204  Epoch 7/10, Batch 100/204  Epoch 7/10, Batch 150/204  Epoch 7/10, Batch 200/204  Epoch 7/10: Train=185.84, Val=210.38, Physics=5144.7257
+  Epoch 8/10, Batch 0/204  Epoch 8/10, Batch 50/204  Epoch 8/10, Batch 100/204  Epoch 8/10, Batch 150/204  Epoch 8/10, Batch 200/204  Epoch 8/10: Train=178.63, Val=193.11, Physics=4963.6073
+  Epoch 9/10, Batch 0/204  Epoch 9/10, Batch 50/204  Epoch 9/10, Batch 100/204  Epoch 9/10, Batch 150/204  Epoch 9/10, Batch 200/204  Epoch 9/10: Train=161.10, Val=191.21, Physics=4837.6923
+  Epoch 10/10, Batch 0/204  Epoch 10/10, Batch 50/204  Epoch 10/10, Batch 100/204  Epoch 10/10, Batch 150/204  Epoch 10/10, Batch 200/204  Epoch 10/10: Train=154.14, Val=151.53, Physics=4745.4887
+
+Results:
+  Best Val Loss: 151.5347
+  Test ATE: 4.556m
+  Test RPE: 1.415m
+  Test Drift: 7.604m
+
+
+======================================================================
+COMPARATIVE RESULTS
+======================================================================
+
+Hypothesis                                 Val Loss      ATE      RPE    Drift
+----------------------------------------------------------------------
+H0: No Physics (Baseline)                    108.70    5.757    1.437    7.698
+H1: Energy/Momentum Conservation              83.58    5.256    1.408    5.781
+H2: Dynamics Consistency                     131.91    5.662    1.364    9.559
+H3: Trajectory Smoothness                     85.99    4.869    1.393    6.923
+H4: Energy Conservation (Strong)             130.55    5.466    1.397    7.512
+H5: Smoothness (Strong)                      151.53    4.556    1.415    7.604
+
+======================================================================
+RECOMMENDATIONS
+======================================================================
+
+Best by ATE: H5: Smoothness (Strong)
+  ATE: 4.556m (Baseline: 2.907m)
+
+Best by Drift: H1: Energy/Momentum Conservation
+  Drift: 5.781m (Baseline: 2.906m)
+
+✓ Results saved to: experiments/physics_hypothesis_results.json
+======================================================================

@@ -1,0 +1,30 @@
+📊 MLflow Experiment: PIDSE_KITTI_Training
+   Tracking URI: file:///home/mj/PIDSE/mlruns
+   Experiment ID: 337910822649475740
+======================================================================
+🚗 PIDSE KITTI Full Training with MLflow Tracking
+======================================================================
+
+🔧 Step 1: Setup Configuration
+   Device: cuda
+   State dim: 12, Control dim: 4
+   Batch size: 2, Sequence length: 50
+   Learning rate: 0.0001
+
+📊 Step 2: Load KITTI Dataset
+   ✓ Training sequences: 408 samples
+   ✓ Validation sequences: 55 samples
+   ✓ Test sequences: 21 samples
+
+🔄 Step 3: Create Data Loaders
+   ✓ Train batches: 204
+   ✓ Validation batches: 28
+   ✓ Test batches: 11
+
+🏗️  Step 4: Initialize PIDSE Model
+   ✓ Total parameters: 4,231
+   ✓ Trainable parameters: 4,228
+
+🎯 Step 5: Training Loop
+   Training for 30 epochs...
+     Batch 0/204...
