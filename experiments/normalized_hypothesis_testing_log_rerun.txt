@@ -1,0 +1,35 @@
+================================================================================
+Multi-Hypothesis Physics Testing with Loss Normalization
+================================================================================
+Start Time: 2025-11-27 14:44:28
+
+################################################################################
+# HYPOTHESIS: CONSERVATION
+################################################################################
+
+================================================================================
+Testing: CONSERVATION | Weight=0.0 | Normalize=True
+================================================================================
+Loading train dataset...
+✓ Train dataset loaded: 408 samples
+Loading val dataset...
+✓ Val dataset loaded: 55 samples
+Loading test dataset...
+✓ Test dataset loaded: 21 samples
+Creating data loaders...
+✓ Loaded 408 train trajectories
+Creating val loader...
+✓ Val loader created
+Creating test loader...
+✓ Test loader created
+Initializing model...
+✓ Model initialized on cuda
+Configuring physics constraints...
+✓ Physics type: conservation
+✓ Loss normalization: True
+Creating optimizer...
+✓ Optimizer created
+
+Starting training for 15 epochs...
+  Epoch 1/15, Batch 0/204
+  Epoch 1/15, Batch 10/204

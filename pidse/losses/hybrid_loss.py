@@ -33,7 +33,8 @@ class HybridLoss(nn.Module):
         estimation_loss_type: str = "mse",
         physics_loss_type: str = "conservation",
         adaptive_weights: bool = False,
-        normalize_physics_loss: bool = True  # NEW: Enable loss normalization
+        normalize_physics_loss: bool = True,
+        normalization_strategy: str = "fixed"  # "adaptive", "fixed", "manual", "learnable", "none"
     ):
         super().__init__()
         self.config = config
@@ -42,6 +43,7 @@ class HybridLoss(nn.Module):
         self.physics_loss_type = physics_loss_type
         self.adaptive_weights = adaptive_weights
         self.normalize_physics_loss = normalize_physics_loss
+        self.normalization_strategy = normalization_strategy
         
         # Loss weights
         if adaptive_weights:
@@ -66,10 +68,26 @@ class HybridLoss(nn.Module):
         self.register_buffer('loss_history', torch.zeros(3, 100))  # [estimation, physics, reg] x history
         self.register_buffer('history_idx', torch.tensor(0))
         
-        # Running statistics for loss normalization
-        self.register_buffer('estimation_loss_ema', torch.tensor(1.0))
-        self.register_buffer('physics_loss_ema', torch.tensor(1.0))
-        self.ema_momentum = 0.99  # Exponential moving average momentum
+        # Normalization strategy parameters
+        if normalization_strategy == "adaptive":
+            # EMA-based adaptive normalization (moving target - problematic!)
+            self.register_buffer('estimation_loss_ema', torch.tensor(1.0))
+            self.register_buffer('physics_loss_ema', torch.tensor(1.0))
+            self.ema_momentum = 0.99
+        elif normalization_strategy == "fixed":
+            # Fixed normalization computed once at start
+            self.register_buffer('physics_scale_factor', torch.tensor(1.0))
+            self.register_buffer('scale_initialized', torch.tensor(False))
+            self.calibration_batches = 10
+            self.calibration_est = []
+            self.calibration_phys = []
+        elif normalization_strategy == "manual":
+            # Manual scaling factor (rule of thumb: 1/1000 for energy conservation)
+            self.manual_scale_factor = 1.0 / 1000.0  # Adjust based on physics type
+        elif normalization_strategy == "learnable":
+            # Learnable scaling factor
+            self.log_physics_scale = nn.Parameter(torch.zeros(1))  # exp(0) = 1
+        # "none" = no normalization
     
     @property
     def current_physics_weight(self) -> float:
@@ -221,32 +239,59 @@ class HybridLoss(nn.Module):
         """
         Normalize physics loss to match estimation loss scale.
         
-        This prevents physics loss from overwhelming the learning signal
-        when physics constraints produce losses at vastly different scales
-        (e.g., energy conservation in thousands while MSE is in ones).
-        
-        Method: Scale physics loss so its magnitude matches estimation loss
-        using exponential moving average for stability.
+        Strategies:
+        - adaptive: EMA-based scaling (moving target - problematic)
+        - fixed: Calibrate once at start, keep constant
+        - manual: Simple divide by constant (1/1000)
+        - learnable: Gradient-optimized scale parameter
+        - none: No normalization
         """
-        with torch.no_grad():
-            # Update running statistics with EMA
-            self.estimation_loss_ema = (
-                self.ema_momentum * self.estimation_loss_ema + 
-                (1 - self.ema_momentum) * estimation_loss.detach()
-            )
-            self.physics_loss_ema = (
-                self.ema_momentum * self.physics_loss_ema + 
-                (1 - self.ema_momentum) * physics_loss_raw.detach()
-            )
-        
-        # Compute scaling factor to match estimation loss magnitude
-        # Add epsilon to prevent division by zero
-        scale_factor = self.estimation_loss_ema / (self.physics_loss_ema + 1e-8)
-        
-        # Apply scaling to physics loss
-        physics_loss_normalized = physics_loss_raw * scale_factor
-        
-        return physics_loss_normalized
+        if self.normalization_strategy == "adaptive":
+            # EMA-based adaptive normalization (moving target)
+            with torch.no_grad():
+                self.estimation_loss_ema = (
+                    self.ema_momentum * self.estimation_loss_ema + 
+                    (1 - self.ema_momentum) * estimation_loss.detach()
+                )
+                self.physics_loss_ema = (
+                    self.ema_momentum * self.physics_loss_ema + 
+                    (1 - self.ema_momentum) * physics_loss_raw.detach()
+                )
+            scale_factor = self.estimation_loss_ema / (self.physics_loss_ema + 1e-8)
+            return physics_loss_raw * scale_factor
+            
+        elif self.normalization_strategy == "fixed":
+            # Fixed normalization: calibrate once, then keep constant
+            if not self.scale_initialized:
+                # Collect statistics during calibration
+                with torch.no_grad():
+                    self.calibration_est.append(estimation_loss.detach().item())
+                    self.calibration_phys.append(physics_loss_raw.detach().item())
+                    
+                    if len(self.calibration_est) >= self.calibration_batches:
+                        # Compute fixed scale from calibration data
+                        avg_est = sum(self.calibration_est) / len(self.calibration_est)
+                        avg_phys = sum(self.calibration_phys) / len(self.calibration_phys)
+                        self.physics_scale_factor = torch.tensor(avg_est / (avg_phys + 1e-8))
+                        self.scale_initialized = torch.tensor(True)
+                        print(f"[Fixed Normalization] Calibrated scale factor: {self.physics_scale_factor.item():.6f}")
+                        print(f"  Avg estimation loss: {avg_est:.6f}, Avg physics loss: {avg_phys:.6f}")
+            
+            # Apply fixed scale (1.0 during calibration, then constant)
+            return physics_loss_raw * self.physics_scale_factor
+            
+        elif self.normalization_strategy == "manual":
+            # Manual normalization: simple constant divisor
+            return physics_loss_raw * self.manual_scale_factor
+            
+        elif self.normalization_strategy == "learnable":
+            # Learnable normalization: gradient-optimized scale
+            scale = torch.exp(self.log_physics_scale)
+            return physics_loss_raw * scale
+            
+        else:  # "none"
+            # No normalization
+            return physics_loss_raw
     
     def _compute_regularization_loss(
         self,
